@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
     'music.apps.MusicConfig',
+    'blog.apps.BlogConfig',
     'storages',
     'corsheaders',
     'rest_framework',
