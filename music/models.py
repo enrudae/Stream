@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import CustomUser, MusicianProfile
 from Stream.yandex_s3_storage import ClientDocsStorage
+from datetime import timedelta
 
 
 class Mood(models.Model):
@@ -32,7 +33,7 @@ class Playlist(models.Model):
     name = models.CharField(max_length=25)
     description = models.CharField(max_length=255, blank=True)
     track_count = models.IntegerField(default=0)
-    duration_time = models.DurationField()
+    duration_time = models.DurationField(default=timedelta(seconds=0))
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     is_favourites = models.BooleanField(default=False)

@@ -12,6 +12,9 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
+    def __str__(self):
+        return self.username
+
 
 class MusicianProfile(models.Model):
     user = models.OneToOneField(CustomUser, related_name='user', on_delete=models.CASCADE)
