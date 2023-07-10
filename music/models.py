@@ -9,6 +9,7 @@ class Mood(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=25)
+    image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
 
 
 class Album(models.Model):
