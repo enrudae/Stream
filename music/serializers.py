@@ -10,7 +10,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Playlist
         exclude = []
-        read_only_fields = ('track_count', 'duration_time', 'is_favourites', 'created_date')
+        read_only_fields = ('track_count', 'duration_time', 'created_date')
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

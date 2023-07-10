@@ -36,7 +36,6 @@ class Playlist(models.Model):
     duration_time = models.DurationField(default=timedelta(seconds=0))
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
-    is_favourites = models.BooleanField(default=False)
     user = models.ForeignKey(CustomUser, verbose_name='Пользователь', on_delete=models.CASCADE)
 
 
@@ -51,6 +50,12 @@ class Track(models.Model):
     album = models.ForeignKey(Album, verbose_name='Альбом', on_delete=models.SET_NULL, blank=True, null=True)
     genre = models.ForeignKey(Genre, verbose_name='Жанр', on_delete=models.SET_NULL, blank=True, null=True)
     mood = models.ForeignKey(Mood, verbose_name='Настроение', on_delete=models.SET_NULL, blank=True, null=True)
+
+
+class FavoriteTrack(models.Model):
+    like_date = models.DateTimeField(auto_now_add=True)
+    track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, verbose_name='Пользователь', on_delete=models.CASCADE)
 
 
 class TrackInPlaylist(models.Model):
