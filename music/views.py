@@ -1,13 +1,20 @@
-from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from .models import Playlist, Track, TrackInPlaylist
-from .serializers import PlaylistSerializer, TrackSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from .models import Playlist, Track, TrackInPlaylist, Genre
+from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+
+
+class GenreAPIView(generics.ListAPIView):
+    serializer_class = GenreSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Genre.objects.all()
 
 
 class PlaylistViewSet(ModelViewSet):
