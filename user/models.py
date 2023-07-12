@@ -18,9 +18,12 @@ class CustomUser(AbstractUser):
 
 class MusicianProfile(models.Model):
     user = models.OneToOneField(CustomUser, related_name='user', on_delete=models.CASCADE)
-    musician_name = models.CharField(max_length=100)
     created_date = models.DateTimeField(auto_now_add=True)
     subscription_count = models.IntegerField(default=0)
+
+    def update_subscription_count(self, increment=True):
+        self.subscription_count += 1 if increment else -1
+        self.save()
 
 
 class Subscription(models.Model):

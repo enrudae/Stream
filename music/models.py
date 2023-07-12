@@ -12,6 +12,9 @@ class Genre(models.Model):
     name = models.CharField(max_length=25)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Album(models.Model):
     name = models.CharField(max_length=25)
@@ -21,6 +24,9 @@ class Album(models.Model):
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     musician = models.ForeignKey(MusicianProfile, verbose_name='Музыкант', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class LikeToAlbum(models.Model):
@@ -38,6 +44,18 @@ class Playlist(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, verbose_name='Пользователь', on_delete=models.CASCADE)
 
+    def update_track_count_and_duration_time(self, duration, increment=True):
+        if increment:
+            self.track_count += 1
+            self.duration_time += duration
+        else:
+            self.track_count -= 1
+            self.duration_time -= duration
+        self.save()
+
+    def __str__(self):
+        return self.name
+
 
 class Track(models.Model):
     name = models.CharField(max_length=50)
@@ -50,6 +68,9 @@ class Track(models.Model):
     album = models.ForeignKey(Album, verbose_name='Альбом', on_delete=models.SET_NULL, blank=True, null=True)
     genre = models.ForeignKey(Genre, verbose_name='Жанр', on_delete=models.SET_NULL, blank=True, null=True)
     mood = models.ForeignKey(Mood, verbose_name='Настроение', on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class FavoriteTrack(models.Model):

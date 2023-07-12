@@ -1,10 +1,9 @@
 from rest_framework import serializers
 from .models import Playlist, Track
-from drf_extra_fields.fields import Base64ImageField
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = serializers.ImageField(required=False)
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -19,9 +18,14 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
 
 class TrackSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Track
         exclude = []
         read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['musician'] = instance.musician.user.username
+        return data
