@@ -10,6 +10,11 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
         exclude = ['user']
         read_only = ['created_date', 'subscription_count']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['name'] = instance.user.username
+        return data
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     musician = MusicianProfileSerializer(read_only=True)

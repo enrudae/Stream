@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Playlist, Track
+from user.serializers import MusicianProfileSerializer
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
@@ -19,13 +20,12 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
 class TrackSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
+    mood = serializers.CharField(required=False, allow_null=True, source='mood.name')
+    album = serializers.CharField(required=False, allow_null=True, source='album.name')
+    genre = serializers.CharField(required=False, allow_null=True, source='genre.name')
+    musician = MusicianProfileSerializer()
 
     class Meta:
         model = Track
         exclude = []
         read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['musician'] = instance.musician.user.username
-        return data
