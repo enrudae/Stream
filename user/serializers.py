@@ -3,6 +3,15 @@ from .models import Subscription, CustomUser, MusicianProfile
 from django.shortcuts import get_object_or_404
 
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'email', 'username', 'image', 'is_musician', 'date_joined']
+        read_only = ['email', 'date_joined']
+
+
 class MusicianProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicianProfile

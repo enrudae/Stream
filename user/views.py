@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .models import Subscription
-from .serializers import SubscriptionSerializer
+from .serializers import SubscriptionSerializer, CustomUserSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
@@ -24,3 +24,10 @@ class SubscriptionViewSet(ModelViewSet):
         musician.update_subscription_count(increment=False)
         return super().destroy(request, *args, **kwargs)
 
+
+class CustomUserAPIView(generics.RetrieveAPIView):
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

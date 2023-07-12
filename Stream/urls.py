@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from music.views import PlaylistViewSet
-from user.views import SubscriptionViewSet
+from user.views import SubscriptionViewSet, CustomUserAPIView
 from rest_framework import routers
 from .yasg import urlpatterns as doc_urls
 
@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/playlists/<int:pk>/add_track/<int:track_id>/', PlaylistViewSet.as_view({'post': 'add_track'}), name='playlist-add-track'),
     path('api/playlists/<int:pk>/delete_track/<int:track_id>/', PlaylistViewSet.as_view({'delete': 'delete_track'}), name='playlist-delete-track'),
     path('api/playlists/<int:pk>/tracks/', PlaylistViewSet.as_view({'get': 'tracks'}), name='playlist-tracks'),
+    path('api/user/', CustomUserAPIView.as_view(), name='user-detail'),
 ]
 
 urlpatterns += doc_urls
