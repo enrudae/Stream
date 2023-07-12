@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'djoser',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -180,6 +181,17 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 
 # ----Yandex s3----
 DEFAULT_FILE_STORAGE = 'yandex_s3_storage.ClientDocsStorage'  # path to file we created before

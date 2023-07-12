@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from music.views import PlaylistViewSet
 from user.views import SubscriptionViewSet
 from rest_framework import routers
+from .yasg import urlpatterns as doc_urls
 
 router = routers.DefaultRouter()
 router.register('playlists', PlaylistViewSet, basename='playlist')
@@ -25,3 +26,5 @@ urlpatterns = [
     path('api/playlists/<int:pk>/delete_track/<int:track_id>/', PlaylistViewSet.as_view({'delete': 'delete_track'}), name='playlist-delete-track'),
     path('api/playlists/<int:pk>/tracks/', PlaylistViewSet.as_view({'get': 'tracks'}), name='playlist-tracks'),
 ]
+
+urlpatterns += doc_urls
