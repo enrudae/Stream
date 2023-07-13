@@ -13,15 +13,27 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class MusicianProfileSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = MusicianProfile
-        exclude = ['user']
+        exclude = []
         read_only = ['created_date', 'subscription_count']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['name'] = instance.user.username
         return data
+
+    def create(self, validated_data):
+        user = validated_data['user']
+        existing_subscription = MusicianProfile.objects.filter(user=user).exists()
+        if existing_subscription:
+            raise serializers.ValidationError('MusicianProfile already exists.')
+
+        subscription = MusicianProfile.objects.create(user=user)
+        user.become_musician()
+        return subscription
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

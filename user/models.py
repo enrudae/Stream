@@ -12,6 +12,10 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
+    def become_musician(self, increment=True):
+        self.is_musician = True
+        self.save()
+
     def __str__(self):
         return self.username
 

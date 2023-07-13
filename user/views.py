@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .models import Subscription
-from .serializers import SubscriptionSerializer, CustomUserSerializer
+from .serializers import SubscriptionSerializer, CustomUserSerializer, MusicianProfileSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
@@ -31,3 +31,8 @@ class CustomUserAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class MusicianProfileAPIView(generics.CreateAPIView):
+    serializer_class = MusicianProfileSerializer
+    permission_classes = [IsAuthenticated]
