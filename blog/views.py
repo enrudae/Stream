@@ -1,25 +1,17 @@
-import rest_framework.viewsets
-from django.shortcuts import render
-from rest_framework import generics, viewsets
-from rest_framework.decorators import action
+from rest_framework import generics
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from blog.models import *
-from blog.permissions import IsOwner, IsOwnerOrReadOnly, IsAuthenticatedAndSafe
 from blog.serializers import PostSerializer, PostCreateSerializer
 
 
-# Get all posts
 class PostsAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated,)
 
 
-# Get and Delete post by id
 class PostListDestroyAPIView(generics.RetrieveDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
@@ -34,7 +26,6 @@ class PostListDestroyAPIView(generics.RetrieveDestroyAPIView):
             raise PermissionDenied(detail=("Cannot delete other people posts",))
 
 
-# Get all musician's posts
 class MusicianPostsAPIView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticated,)
@@ -44,7 +35,6 @@ class MusicianPostsAPIView(generics.ListAPIView):
         return Post.objects.filter(musician=musician_id)
 
 
-# Create new post
 class NewMusicianPostAPIView(generics.CreateAPIView):
     serializer_class = PostCreateSerializer
     permission_classes = (IsAuthenticated,)
