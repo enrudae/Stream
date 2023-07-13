@@ -2,8 +2,10 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack
-from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer
+from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
+    TrackModifySerializer
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsMusician, IsTrackCreator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -16,6 +18,26 @@ class GenreAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Genre.objects.all()
+
+
+class TrackViewSet(ModelViewSet):
+    serializer_class = TrackSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Track.objects.all()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsMusician()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsTrackCreator()]
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return TrackModifySerializer
+        return TrackSerializer
 
 
 class FavoriteTrackViewSet(mixins.ListModelMixin,

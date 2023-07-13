@@ -5,7 +5,7 @@ from Stream.yandex_s3_storage import ClientDocsStorage
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    username = models.CharField(max_length=100)
+    username = models.CharField(unique=True, max_length=100)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     is_musician = models.BooleanField(default=False)
 

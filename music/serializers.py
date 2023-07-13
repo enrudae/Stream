@@ -1,5 +1,7 @@
+from datetime import timedelta
+
 from rest_framework import serializers
-from .models import Playlist, Track, Genre, FavoriteTrack
+from .models import Playlist, Track, Genre, FavoriteTrack, MusicianProfile
 from user.serializers import MusicianProfileSerializer
 from django.shortcuts import get_object_or_404
 
@@ -39,6 +41,21 @@ class TrackSerializer(serializers.ModelSerializer):
         model = Track
         exclude = []
         read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
+
+
+class TrackModifySerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
+    class Meta:
+        model = Track
+        exclude = ['duration', 'created_date']
+        read_only_fields = ('musician',)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        musician = MusicianProfile.objects.get(user=user)
+        track = Track.objects.create(musician=musician, duration=timedelta(seconds=1), **validated_data)
+        return track
 
 
 class FavoriteTrackSerializer(serializers.ModelSerializer):

@@ -60,7 +60,7 @@ class Playlist(models.Model):
 class Track(models.Model):
     name = models.CharField(max_length=50)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
-    track = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
+    track = models.FileField(storage=ClientDocsStorage())
     duration = models.DurationField()
     created_date = models.DateTimeField(auto_now_add=True)
 

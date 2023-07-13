@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from music.views import PlaylistViewSet, GenreAPIView, FavoriteTrackViewSet
+from music.views import PlaylistViewSet, GenreAPIView, FavoriteTrackViewSet, TrackViewSet
 from user.views import SubscriptionViewSet, CustomUserAPIView, MusicianProfileAPIView
 from rest_framework import routers
 from .yasg import urlpatterns as doc_urls
@@ -10,6 +10,7 @@ router = routers.DefaultRouter()
 router.register('playlists', PlaylistViewSet, basename='playlist')
 router.register('subscriptions', SubscriptionViewSet, basename='subscription')
 router.register('favorites', FavoriteTrackViewSet, basename='favorite')
+router.register('tracks', TrackViewSet, basename='track')
 
 
 urlpatterns = [
