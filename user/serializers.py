@@ -18,7 +18,7 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicianProfile
         exclude = []
-        read_only = ['created_date', 'subscription_count']
+        read_only = ['created_date', 'subscription_count', 'is_musician']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

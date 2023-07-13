@@ -1,10 +1,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from .models import Playlist, Track, TrackInPlaylist, Genre
-from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer
+from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack
+from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 
@@ -17,9 +18,21 @@ class GenreAPIView(generics.ListAPIView):
         return Genre.objects.all()
 
 
+class FavoriteTrackViewSet(mixins.ListModelMixin,
+                           mixins.CreateModelMixin,
+                           mixins.DestroyModelMixin,
+                           viewsets.GenericViewSet):
+    serializer_class = FavoriteTrackSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return FavoriteTrack.objects.filter(user=user)
+
+
 class PlaylistViewSet(ModelViewSet):
     serializer_class = PlaylistSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
