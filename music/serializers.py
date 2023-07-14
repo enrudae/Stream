@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from rest_framework import serializers
-from .models import Playlist, Track, Genre, FavoriteTrack, MusicianProfile
+from .models import Playlist, Track, Genre, FavoriteTrack, MusicianProfile, Album, LikeToAlbum
 from user.serializers import MusicianProfileSerializer
 from django.shortcuts import get_object_or_404
 
@@ -29,6 +29,45 @@ class PlaylistSerializer(serializers.ModelSerializer):
         data['user'] = instance.user.username
         return data
 
+
+class AlbumSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
+    class Meta:
+        model = Album
+        exclude = []
+        read_only_fields = ('track_count', 'duration_time', 'created_date', 'musician')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['musician'] = instance.musician.user.username
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        musician = MusicianProfile.objects.get(user=user)
+        album = Album.objects.create(musician=musician, **validated_data)
+        return album
+
+
+class LikeToAlbumSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = LikeToAlbum
+        exclude = []
+
+    def create(self, validated_data):
+        user = validated_data['user']
+        album = validated_data['album']
+        #album_id = validated_data['album']
+        #album = get_object_or_404(Album, id=album_id)
+        existing_like = LikeToAlbum.objects.filter(user=user, album=album).exists()
+        if existing_like:
+            raise serializers.ValidationError('Like already exists.')
+
+        like = LikeToAlbum.objects.create(user=user, album=album)
+        return like
 
 class TrackSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)

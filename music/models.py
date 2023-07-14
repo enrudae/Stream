@@ -20,7 +20,7 @@ class Album(models.Model):
     name = models.CharField(max_length=25)
     description = models.CharField(max_length=255, blank=True)
     track_count = models.IntegerField(default=0)
-    duration_time = models.DurationField()
+    duration_time = models.DurationField(default=timedelta(seconds=0))
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     musician = models.ForeignKey(MusicianProfile, verbose_name='Музыкант', on_delete=models.CASCADE)

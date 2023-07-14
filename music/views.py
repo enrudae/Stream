@@ -1,11 +1,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack
+from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack, Album, LikeToAlbum
 from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
-    TrackModifySerializer
+    TrackModifySerializer, AlbumSerializer, LikeToAlbumSerializer
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsMusician, IsTrackCreator
+from .permissions import IsMusician, IsMusicianCreator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -31,7 +31,7 @@ class TrackViewSet(ModelViewSet):
         if self.action == 'create':
             return [IsAuthenticated(), IsMusician()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsTrackCreator()]
+            return [IsAuthenticated(), IsMusicianCreator()]
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -99,4 +99,39 @@ class PlaylistViewSet(ModelViewSet):
         tracks = [track_in_playlist.track for track_in_playlist in tracks_in_playlist]
 
         serializer = TrackSerializer(tracks, many=True)
+        return Response(serializer.data)
+
+
+class LikeToAlbumViewSet(mixins.ListModelMixin,
+                         mixins.CreateModelMixin,
+                         mixins.DestroyModelMixin,
+                         viewsets.GenericViewSet):
+    serializer_class = LikeToAlbumSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return LikeToAlbum.objects.filter(user=user)
+
+
+class AlbumViewSet(ModelViewSet):
+    serializer_class = AlbumSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Album.objects.all()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsMusician()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsMusicianCreator()]
+        return super().get_permissions()
+
+    @action(methods=['get'], detail=False)
+    def tracks(self, request, pk=None):
+        album = self.get_object()
+        tracks_in_album = Track.objects.filter(album=album)
+
+        serializer = TrackSerializer(tracks_in_album, many=True)
         return Response(serializer.data)
