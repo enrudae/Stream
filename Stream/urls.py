@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+from blog.views import PostsAPIView, PostListDestroyAPIView, MusicianPostsAPIView, NewMusicianPostAPIView, \
+    ModifyMusicianPostAPIView
 from music.views import PlaylistViewSet, GenreAPIView, FavoriteTrackViewSet, TrackViewSet
 from user.views import SubscriptionViewSet, CustomUserAPIView, MusicianProfileAPIView
 from rest_framework import routers
@@ -29,6 +32,12 @@ urlpatterns = [
     path('api/user/', CustomUserAPIView.as_view(), name='user-detail'),
     path('api/genres/', GenreAPIView.as_view(), name='genres-list'),
     path('api/create_musician/', MusicianProfileAPIView.as_view(), name='create_musician'),
+
+    path('api/posts/', PostsAPIView.as_view()),
+    path('api/posts/<int:pk>/', PostListDestroyAPIView.as_view()),
+    path('api/musician_posts/<int:pk>/', MusicianPostsAPIView.as_view()),
+    path('api/musician_posts/add_post/', NewMusicianPostAPIView.as_view()),
+    path('api/musician_posts/add_post/<int:pk>/', ModifyMusicianPostAPIView.as_view()),
 ]
 
 #urlpatterns += doc_urls
