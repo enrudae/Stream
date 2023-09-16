@@ -45,4 +45,4 @@ urlpatterns = [
     path('api/albums/<int:pk>/tracks/', AlbumViewSet.as_view({'get': 'tracks'}), name='album-tracks'),
 ]
 
-# urlpatterns += doc_urls
+#urlpatterns += doc_urls

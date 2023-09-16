@@ -35,3 +35,12 @@ class Subscription(models.Model):
     musician = models.ForeignKey(MusicianProfile, verbose_name='Музыкант', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, verbose_name='Пользователь', related_name='subscriber',
                              on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Подписка'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'musician'],
+                name='unique_user_musician'
+            )
+        ]

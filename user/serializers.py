@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Subscription, CustomUser, MusicianProfile
 from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -49,10 +50,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         musician_id = validated_data['musician_id']
         user = validated_data['user']
         musician = get_object_or_404(MusicianProfile, id=musician_id)
-        existing_subscription = Subscription.objects.filter(user=user, musician=musician).exists()
-        if existing_subscription:
-            raise serializers.ValidationError('Subscription already exists.')
 
-        subscription = Subscription.objects.create(musician=musician, user=user)
-        musician.update_subscription_count(increment=True)
-        return subscription
+        try:
+            subscription = Subscription.objects.create(musician=musician, user=user)
+            musician.update_subscription_count(increment=True)
+            return subscription
+        except IntegrityError:
+            raise serializers.ValidationError('Subscription already exists.')

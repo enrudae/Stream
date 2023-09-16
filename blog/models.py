@@ -7,12 +7,11 @@ from Stream.yandex_s3_storage import ClientDocsStorage
 class Post(models.Model):
     text = models.TextField(max_length=255)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
-    track = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     like_count = models.IntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     musician = models.ForeignKey(MusicianProfile, verbose_name='Музыкант', on_delete=models.CASCADE)
-    #track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.CASCADE)
+    track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.SET_NULL, blank=True, null=True)
 
 
 class CommentInPost(models.Model):
