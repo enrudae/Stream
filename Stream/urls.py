@@ -2,8 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from blog.views import PostsAPIView, PostListDestroyAPIView, MusicianPostsAPIView, NewMusicianPostAPIView, \
-    ModifyMusicianPostAPIView
+from blog.views import PostViewSet
 from music.views import PlaylistViewSet, GenreAPIView, FavoriteTrackViewSet, TrackViewSet, AlbumViewSet, \
     LikeToAlbumViewSet
 from user.views import SubscriptionViewSet, CustomUserAPIView, MusicianProfileAPIView
@@ -17,6 +16,7 @@ router.register('favorites', FavoriteTrackViewSet, basename='favorite')
 router.register('tracks', TrackViewSet, basename='track')
 router.register('albums', AlbumViewSet, basename='album')
 router.register('favorite-albums', LikeToAlbumViewSet, basename='favorite-album')
+router.register('posts', PostViewSet, basename='post')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,12 +37,6 @@ urlpatterns = [
     path('api/genres/', GenreAPIView.as_view(), name='genres-list'),
     path('api/create_musician/', MusicianProfileAPIView.as_view(), name='create_musician'),
 
-    path('api/posts/', PostsAPIView.as_view()),
-    path('api/posts/<int:pk>/', PostListDestroyAPIView.as_view()),
-    path('api/musician_posts/<int:pk>/', MusicianPostsAPIView.as_view()),
-    path('api/musician_posts/add_post/', NewMusicianPostAPIView.as_view()),
-    path('api/musician_posts/add_post/<int:pk>/', ModifyMusicianPostAPIView.as_view()),
-    path('api/albums/<int:pk>/tracks/', AlbumViewSet.as_view({'get': 'tracks'}), name='album-tracks'),
 ]
 
-#urlpatterns += doc_urls
+urlpatterns += doc_urls

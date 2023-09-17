@@ -12,9 +12,15 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
-    def become_musician(self, increment=True):
+    def become_musician(self):
+        musician_profile = MusicianProfile.objects.create(user=self)
         self.is_musician = True
         self.save()
+        return musician_profile
+
+    def get_musician_subscriptions(self):
+        user_subscriptions = Subscription.objects.filter(user=self).select_related('musician')
+        return [subscription.musician for subscription in user_subscriptions]
 
     def __str__(self):
         return self.username
@@ -29,6 +35,10 @@ class MusicianProfile(models.Model):
         self.subscription_count += 1 if increment else -1
         self.save()
 
+    class Meta:
+        verbose_name = 'Профиль музыканта'
+        verbose_name_plural = 'Профили музыкантов'
+
 
 class Subscription(models.Model):
     subscription_date = models.DateTimeField(auto_now_add=True)
@@ -38,6 +48,7 @@ class Subscription(models.Model):
 
     class Meta:
         verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'musician'],

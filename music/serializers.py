@@ -21,7 +21,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Playlist
-        exclude = []
+        fields = '__all__'
         read_only_fields = ('track_count', 'duration_time', 'created_date')
 
     def to_representation(self, instance):
@@ -35,7 +35,7 @@ class AlbumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Album
-        exclude = []
+        fields = '__all__'
         read_only_fields = ('track_count', 'duration_time', 'created_date', 'musician')
 
     def to_representation(self, instance):
@@ -55,7 +55,7 @@ class LikeToAlbumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LikeToAlbum
-        exclude = []
+        fields = '__all__'
 
     def create(self, validated_data):
         user = validated_data['user']
@@ -69,6 +69,7 @@ class LikeToAlbumSerializer(serializers.ModelSerializer):
         like = LikeToAlbum.objects.create(user=user, album=album)
         return like
 
+
 class TrackSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
     mood = serializers.CharField(required=False, allow_null=True, source='mood.name')
@@ -78,11 +79,11 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        exclude = []
+        fields = '__all__'
         read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
 
 
-class TrackModifySerializer(serializers.ModelSerializer):
+class TrackCreateModifySerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
 
     class Meta:
@@ -104,7 +105,7 @@ class FavoriteTrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FavoriteTrack
-        exclude = []
+        fields = '__all__'
         read_only_fields = ('like_date',)
 
     def create(self, validated_data):

@@ -13,6 +13,10 @@ class Post(models.Model):
     musician = models.ForeignKey(MusicianProfile, verbose_name='Музыкант', on_delete=models.CASCADE)
     track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.SET_NULL, blank=True, null=True)
 
+    def update_like_count(self, increment=True):
+        self.subscription_count += 1 if increment else -1
+        self.save()
+
 
 class CommentInPost(models.Model):
     text = models.TextField(max_length=255)

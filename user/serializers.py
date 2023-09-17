@@ -18,8 +18,8 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MusicianProfile
-        exclude = []
-        read_only = ['created_date', 'subscription_count', 'is_musician']
+        exclude = ['created_date']
+        read_only = ['subscription_count']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -32,9 +32,8 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
         if existing_subscription:
             raise serializers.ValidationError('MusicianProfile already exists.')
 
-        subscription = MusicianProfile.objects.create(user=user)
-        user.become_musician()
-        return subscription
+        musician_profile = user.become_musician()
+        return musician_profile
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

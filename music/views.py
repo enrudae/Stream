@@ -3,13 +3,14 @@ from rest_framework.response import Response
 
 from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack, Album, LikeToAlbum
 from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
-    TrackModifySerializer, AlbumSerializer, LikeToAlbumSerializer
+    TrackCreateModifySerializer, AlbumSerializer, LikeToAlbumSerializer
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsMusician, IsMusicianCreator
+from permissions.permissions import IsMusician, IsMusicianCreator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from rest_framework import filters
 
 
 class GenreAPIView(generics.ListAPIView):
@@ -23,9 +24,23 @@ class GenreAPIView(generics.ListAPIView):
 class TrackViewSet(ModelViewSet):
     serializer_class = TrackSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
     def get_queryset(self):
-        return Track.objects.all()
+        queryset = Track.objects.all()
+
+        musician_id = self.request.query_params.get('musician_id')
+        genre_id = self.request.query_params.get('genre_id')
+        album_id = self.request.query_params.get('album_id')
+
+        if musician_id:
+            queryset = queryset.filter(musician=musician_id)
+        if genre_id:
+            queryset = queryset.filter(genre=genre_id)
+        if album_id:
+            queryset = queryset.filter(album=album_id)
+        return queryset
 
     def get_permissions(self):
         if self.action == 'create':
@@ -36,7 +51,7 @@ class TrackViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return TrackModifySerializer
+            return TrackCreateModifySerializer
         return TrackSerializer
 
 
@@ -127,11 +142,3 @@ class AlbumViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsMusicianCreator()]
         return super().get_permissions()
-
-    @action(methods=['get'], detail=False)
-    def tracks(self, request, pk=None):
-        album = self.get_object()
-        tracks_in_album = Track.objects.filter(album=album)
-
-        serializer = TrackSerializer(tracks_in_album, many=True)
-        return Response(serializer.data)

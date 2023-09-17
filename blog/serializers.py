@@ -1,17 +1,22 @@
 from rest_framework import serializers
 from .models import *
+from user.serializers import MusicianProfileSerializer
 
 
 class PostSerializer(serializers.ModelSerializer):
+    musician = MusicianProfileSerializer()
+
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ('id', 'text', 'image', 'like_count', 'created_date', 'musician', 'track')
 
 
-class PostCreateSerializer(serializers.ModelSerializer):
+class PostCreateModifySerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
     class Meta:
         model = Post
-        exclude = ["is_deleted", "like_count"]
+        exclude = ['created_date']
         read_only_fields = ('musician',)
 
     def create(self, validated_data):
@@ -19,10 +24,3 @@ class PostCreateSerializer(serializers.ModelSerializer):
         musician = MusicianProfile.objects.get(user=user)
         post = Post.objects.create(musician=musician, **validated_data)
         return post
-
-    def update(self, instance, validated_data):
-        instance.text = validated_data.get("text", instance.text)
-        instance.image = validated_data.get("image", instance.image)
-        instance.track = validated_data.get("track", instance.track)
-        instance.save()
-        return instance
