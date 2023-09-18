@@ -14,8 +14,8 @@ class Post(models.Model):
     track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.SET_NULL, blank=True, null=True)
 
     def update_like_count(self, increment=True):
-        self.subscription_count += 1 if increment else -1
-        self.save()
+        self.like_count += 1 if increment else -1
+        self.save(update_fields=['like_count'])
 
 
 class CommentInPost(models.Model):

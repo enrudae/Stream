@@ -51,7 +51,7 @@ class Playlist(models.Model):
         else:
             self.track_count -= 1
             self.duration_time -= duration
-        self.save()
+        self.save(update_fields=['track_count', 'duration_time'])
 
     def __str__(self):
         return self.name

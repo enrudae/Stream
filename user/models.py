@@ -33,7 +33,7 @@ class MusicianProfile(models.Model):
 
     def update_subscription_count(self, increment=True):
         self.subscription_count += 1 if increment else -1
-        self.save()
+        self.save(update_fields=['subscription_count'])
 
     class Meta:
         verbose_name = 'Профиль музыканта'
