@@ -24,11 +24,6 @@ class PlaylistSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('track_count', 'duration_time', 'created_date')
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['user'] = instance.user.username
-        return data
-
 
 class AlbumSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
@@ -60,8 +55,6 @@ class LikeToAlbumSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = validated_data['user']
         album = validated_data['album']
-        #album_id = validated_data['album']
-        #album = get_object_or_404(Album, id=album_id)
         existing_like = LikeToAlbum.objects.filter(user=user, album=album).exists()
         if existing_like:
             raise serializers.ValidationError('Like already exists.')

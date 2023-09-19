@@ -28,7 +28,7 @@ class TrackViewSet(ModelViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        queryset = Track.objects.all()
+        queryset = Track.objects.all().select_related('musician', 'genre', 'album', 'mood')
 
         musician_id = self.request.query_params.get('musician_id')
         genre_id = self.request.query_params.get('genre_id')
@@ -79,33 +79,28 @@ class PlaylistViewSet(ModelViewSet):
     def add_track(self, request, pk=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
-        existing_track = TrackInPlaylist.objects.filter(playlist=playlist, track=track).exists()
-
-        if existing_track:
-            return Response({'detail': 'Track already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        TrackInPlaylist.objects.create(playlist=playlist, track=track)
-        playlist.update_track_count_and_duration_time(track.duration, increment=True)
-        return Response({'detail': 'Track added to playlist.'}, status=status.HTTP_200_OK)
+        _, is_created = TrackInPlaylist.objects.get_or_create(playlist=playlist, track=track)
+        if is_created:
+            playlist.update_track_count_and_duration_time(track.duration, increment=True)
+        return Response(status=status.HTTP_200_OK)
 
     @action(methods=['delete'], detail=True)
     def delete_track(self, request, pk=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
-        existing_track = TrackInPlaylist.objects.filter(playlist=playlist, track=track).exists()
+        existing_track = playlist.objects.filter(track=track).exists()
 
         if not existing_track:
             return Response({'detail': 'Track not exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        TrackInPlaylist.objects.get(playlist=playlist, track=track).delete()
+        playlist.objects.get(track=track).delete()
         playlist.update_track_count_and_duration_time(track.duration, increment=False)
         return Response({'detail': 'Track deleted from playlist.'}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def tracks(self, request, pk=None):
         playlist = self.get_object()
-        tracks_in_playlist = TrackInPlaylist.objects.filter(playlist=playlist).select_related('track')
-        tracks = [track_in_playlist.track for track_in_playlist in tracks_in_playlist]
+        tracks = playlist.tracks.all().select_related('musician', 'genre', 'album', 'mood')
 
         serializer = TrackSerializer(tracks, many=True)
         return Response(serializer.data)

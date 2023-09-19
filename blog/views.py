@@ -12,14 +12,14 @@ class PostViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Post.objects.all()
+        queryset = Post.objects.all().select_related('musician')
         user = self.request.user
         musician_id = self.request.query_params.get('musician_id')
         feed = self.request.query_params.get('feed')
 
         if feed:
             musicians = user.get_musician_subscriptions()
-            posts_in_feed = Post.objects.filter(musician__in=musicians)
+            posts_in_feed = queryset.filter(musician__in=musicians)
             return posts_in_feed
 
         if musician_id:

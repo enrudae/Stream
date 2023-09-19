@@ -20,7 +20,7 @@ class SubscriptionViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        return Subscription.objects.filter(user=user)
+        return Subscription.objects.filter(user=user).select_related('musician')
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

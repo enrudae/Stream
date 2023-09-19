@@ -21,11 +21,6 @@ class MusicianProfileSerializer(serializers.ModelSerializer):
         exclude = ['created_date']
         read_only = ['subscription_count']
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['name'] = instance.user.username
-        return data
-
     def create(self, validated_data):
         user = validated_data['user']
         existing_subscription = MusicianProfile.objects.filter(user=user).exists()

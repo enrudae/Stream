@@ -194,9 +194,23 @@ SWAGGER_SETTINGS = {
 
 
 # ----Yandex s3----
-DEFAULT_FILE_STORAGE = 'yandex_s3_storage.ClientDocsStorage'  # path to file we created before
+DEFAULT_FILE_STORAGE = 'yandex_s3_storage.ClientDocsStorage'
 AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
 YANDEX_CLIENT_DOCS_BUCKET_NAME=YANDEX_CLIENT_DOCS_BUCKET_NAME
 AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID
 AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
 AWS_S3_REGION_NAME = 'storage'
+
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'}
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        }
+    }
+}
