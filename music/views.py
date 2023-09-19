@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -28,7 +29,7 @@ class TrackViewSet(ModelViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        queryset = Track.objects.all().select_related('musician', 'genre', 'album', 'mood')
+        queryset = Track.objects.tracks_with_related()
 
         musician_id = self.request.query_params.get('musician_id')
         genre_id = self.request.query_params.get('genre_id')
@@ -64,7 +65,9 @@ class FavoriteTrackViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        return FavoriteTrack.objects.filter(user=user)
+        return FavoriteTrack.objects.filter(user=user).prefetch_related(
+            Prefetch('track', queryset=Track.objects.tracks_with_related())
+        )
 
 
 class PlaylistViewSet(ModelViewSet):
@@ -100,7 +103,7 @@ class PlaylistViewSet(ModelViewSet):
     @action(methods=['get'], detail=False)
     def tracks(self, request, pk=None):
         playlist = self.get_object()
-        tracks = playlist.tracks.all().select_related('musician', 'genre', 'album', 'mood')
+        tracks = playlist.tracks.tracks_with_related()
 
         serializer = TrackSerializer(tracks, many=True)
         return Response(serializer.data)
@@ -123,7 +126,7 @@ class AlbumViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Album.objects.all()
+        return Album.objects.all().select_related('musician')
 
     def get_permissions(self):
         if self.action == 'create':

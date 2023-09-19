@@ -35,7 +35,7 @@ class AlbumSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['musician'] = instance.musician.user.username
+        data['musician'] = instance.musician.name
         return data
 
     def create(self, validated_data):

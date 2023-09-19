@@ -35,6 +35,11 @@ class LikeToAlbum(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='Пользователь', on_delete=models.CASCADE)
 
 
+class TrackManager(models.Manager):
+    def tracks_with_related(self):
+        return self.get_queryset().select_related('musician', 'genre', 'album', 'mood')
+
+
 class Track(models.Model):
     name = models.CharField(max_length=50)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
@@ -46,6 +51,8 @@ class Track(models.Model):
     album = models.ForeignKey(Album, verbose_name='Альбом', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
     genre = models.ForeignKey(Genre, verbose_name='Жанр', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
     mood = models.ForeignKey(Mood, verbose_name='Настроение', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
+
+    objects = TrackManager()
 
     def __str__(self):
         return self.name
