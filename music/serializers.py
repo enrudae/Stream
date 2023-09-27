@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import Playlist, Track, Genre, FavoriteTrack, MusicianProfile, Album, LikeToAlbum
 from user.serializers import MusicianProfileSerializer
 from django.shortcuts import get_object_or_404
+from music.tasks import process_and_upload_track
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -72,7 +73,7 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = '__all__'
+        exclude = ('original_track',)
         read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
 
 
@@ -81,13 +82,14 @@ class TrackCreateModifySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        exclude = ['duration', 'created_date']
+        exclude = ['duration', 'created_date', 'track']
         read_only_fields = ('musician',)
 
     def create(self, validated_data):
         user = self.context['request'].user
         musician = MusicianProfile.objects.get(user=user)
         track = Track.objects.create(musician=musician, duration=timedelta(seconds=1), **validated_data)
+        process_and_upload_track.delay(track.id)
         return track
 
 

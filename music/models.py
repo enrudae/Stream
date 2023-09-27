@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import CustomUser, MusicianProfile
 from Stream.yandex_s3_storage import ClientDocsStorage
+from django.core.files.storage import FileSystemStorage
 from datetime import timedelta
 
 
@@ -43,7 +44,8 @@ class TrackManager(models.Manager):
 class Track(models.Model):
     name = models.CharField(max_length=50)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
-    track = models.FileField(storage=ClientDocsStorage())
+    original_track = models.FileField(upload_to='Stream/media/tracks/original/', null=True, blank=True, storage=FileSystemStorage())
+    track = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
     duration = models.DurationField()
     created_date = models.DateTimeField(auto_now_add=True)
 
