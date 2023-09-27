@@ -1,10 +1,7 @@
-from datetime import timedelta
-
 from rest_framework import serializers
 from .models import Playlist, Track, Genre, FavoriteTrack, MusicianProfile, Album, LikeToAlbum
 from user.serializers import MusicianProfileSerializer
 from django.shortcuts import get_object_or_404
-from music.tasks import process_and_upload_track
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -88,8 +85,7 @@ class TrackCreateModifySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
         musician = MusicianProfile.objects.get(user=user)
-        track = Track.objects.create(musician=musician, duration=timedelta(seconds=1), **validated_data)
-        process_and_upload_track.delay(track.id)
+        track = Track.objects.create(musician=musician, **validated_data)
         return track
 
 

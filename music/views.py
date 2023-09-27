@@ -22,7 +22,11 @@ class GenreAPIView(generics.ListAPIView):
         return Genre.objects.all()
 
 
-class TrackViewSet(ModelViewSet):
+class TrackViewSet(mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     serializer_class = TrackSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]

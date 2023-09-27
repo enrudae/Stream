@@ -2,6 +2,7 @@ from django.db import models
 from user.models import CustomUser, MusicianProfile
 from Stream.yandex_s3_storage import ClientDocsStorage
 from django.core.files.storage import FileSystemStorage
+from music.tasks import process_and_upload_track
 from datetime import timedelta
 
 
@@ -44,9 +45,9 @@ class TrackManager(models.Manager):
 class Track(models.Model):
     name = models.CharField(max_length=50)
     image = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
-    original_track = models.FileField(upload_to='Stream/media/tracks/original/', null=True, blank=True, storage=FileSystemStorage())
+    original_track = models.FileField(storage=FileSystemStorage(), upload_to='Stream/media/tracks/original/', null=True, blank=True)
     track = models.FileField(storage=ClientDocsStorage(), null=True, blank=True)
-    duration = models.DurationField()
+    duration = models.DurationField(default=timedelta(seconds=0))
     created_date = models.DateTimeField(auto_now_add=True)
 
     musician = models.ForeignKey(MusicianProfile, verbose_name='Создатель', on_delete=models.CASCADE, db_index=True)
@@ -58,6 +59,11 @@ class Track(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.original_track:
+            process_and_upload_track.delay(self.id)
 
 
 class Playlist(models.Model):
