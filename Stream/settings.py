@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from .config import AWS_SECRET_ACCESS_KEY, YANDEX_CLIENT_DOCS_BUCKET_NAME, AWS_ACCESS_KEY_ID, DJANGO_SECRET_KEY
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = DJANGO_SECRET_KEY
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -26,14 +25,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user.apps.UserConfig',
-    'music.apps.MusicConfig',
-    'blog.apps.BlogConfig',
+
     'storages',
     'corsheaders',
     'rest_framework',
     'djoser',
     'drf_yasg',
+
+    'user.apps.UserConfig',
+    'music.apps.MusicConfig',
+    'blog.apps.BlogConfig',
 ]
 
 MIDDLEWARE = [
@@ -209,9 +210,9 @@ CELERY_BROKER_URL = 'redis://redis:6379/0'
 
 # ----Yandex s3----
 DEFAULT_FILE_STORAGE = 'yandex_s3_storage.ClientDocsStorage'
-AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
-YANDEX_CLIENT_DOCS_BUCKET_NAME = YANDEX_CLIENT_DOCS_BUCKET_NAME
-AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+YANDEX_CLIENT_DOCS_BUCKET_NAME = os.environ.get('YANDEX_CLIENT_DOCS_BUCKET_NAME')
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
 AWS_S3_REGION_NAME = 'storage'
 

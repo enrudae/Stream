@@ -2,24 +2,31 @@ from django.db.models import Prefetch
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from .models import Playlist, Track, TrackInPlaylist, Genre, FavoriteTrack, Album, LikeToAlbum
+from .models import Playlist, Track, TrackInPlaylist, Genre, Mood, FavoriteTrack, Album, LikeToAlbum
 from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
-    TrackCreateModifySerializer, AlbumSerializer, LikeToAlbumSerializer
+    TrackCreateModifySerializer, AlbumSerializer, LikeToAlbumSerializer, MoodSerializer
 from rest_framework.permissions import IsAuthenticated
 from permissions.permissions import IsMusician, IsMusicianCreator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import mixins, viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from rest_framework import filters
 
 
-class GenreAPIView(generics.ListAPIView):
-    serializer_class = GenreSerializer
-    permission_classes = [IsAuthenticated]
+class MoodGenreListView(APIView):
+    def get(self, request, *args, **kwargs):
+        moods = Mood.objects.all()
+        genres = Genre.objects.all()
 
-    def get_queryset(self):
-        return Genre.objects.all()
+        mood_serializer = MoodSerializer(moods, many=True)
+        genre_serializer = GenreSerializer(genres, many=True)
+
+        return Response({
+            'moods': mood_serializer.data,
+            'genres': genre_serializer.data
+        })
 
 
 class TrackViewSet(mixins.ListModelMixin,
@@ -83,7 +90,7 @@ class PlaylistViewSet(ModelViewSet):
         return Playlist.objects.filter(user=user)
 
     @action(methods=['post'], detail=True)
-    def add_track(self, request, pk=None, track_id=None):
+    def add_track(self, request, playlist_id=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
         _, is_created = TrackInPlaylist.objects.get_or_create(playlist=playlist, track=track)
@@ -92,7 +99,7 @@ class PlaylistViewSet(ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
     @action(methods=['delete'], detail=True)
-    def delete_track(self, request, pk=None, track_id=None):
+    def delete_track(self, request, playlist_id=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
         existing_track = playlist.objects.filter(track=track).exists()
@@ -105,7 +112,7 @@ class PlaylistViewSet(ModelViewSet):
         return Response({'detail': 'Track deleted from playlist.'}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
-    def tracks(self, request, pk=None):
+    def tracks(self, request, playlist_id=None):
         playlist = self.get_object()
         tracks = playlist.tracks.tracks_with_related()
 
