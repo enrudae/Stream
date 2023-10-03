@@ -1,18 +1,16 @@
-from django.db.models import Prefetch
-from rest_framework import generics, status
+from django.db.models import Prefetch, Count, Case, When
+from rest_framework import generics, status, mixins, viewsets
 from rest_framework.response import Response
-
-from .models import Playlist, Track, TrackInPlaylist, Genre, Mood, FavoriteTrack, Album, LikeToAlbum
-from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
-    TrackCreateModifySerializer, AlbumSerializer, LikeToAlbumSerializer, MoodSerializer
-from rest_framework.permissions import IsAuthenticated
-from permissions.permissions import IsMusician, IsMusicianCreator
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import mixins, viewsets
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from rest_framework import filters
+from rest_framework.permissions import IsAuthenticated
+from permissions.permissions import IsMusician, IsMusicianCreator
+from .models import Playlist, Track, TrackInPlaylist, Genre, Mood, FavoriteTrack, Album, LikeToAlbum
+from .serializers import PlaylistSerializer, TrackSerializer, GenreSerializer, FavoriteTrackSerializer, \
+    TrackCreateModifySerializer, AlbumSerializer, LikeToAlbumSerializer, MoodSerializer
 
 
 class MoodGenreListView(APIView):
@@ -40,24 +38,28 @@ class TrackViewSet(mixins.ListModelMixin,
     search_fields = ['name']
 
     def get_queryset(self):
-        queryset = Track.objects.tracks_with_related()
+        user = self.request.user
+        queryset = Track.objects.tracks_with_related_attributes()
 
         musician_id = self.request.query_params.get('musician_id')
         genre_id = self.request.query_params.get('genre_id')
-        album_id = self.request.query_params.get('album_id')
+        mood_id = self.request.query_params.get('mood_id')
 
         if musician_id:
             queryset = queryset.filter(musician=musician_id)
         if genre_id:
             queryset = queryset.filter(genre=genre_id)
-        if album_id:
-            queryset = queryset.filter(album=album_id)
-        return queryset
+        if mood_id:
+            queryset = queryset.filter(mood_id=mood_id)
+
+        return queryset.annotate(
+            is_favorite=Count(Case(When(favorite_track__user=user, then=1)))
+        )
 
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated(), IsMusician()]
-        elif self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsMusicianCreator()]
         return super().get_permissions()
 
@@ -77,7 +79,7 @@ class FavoriteTrackViewSet(mixins.ListModelMixin,
     def get_queryset(self):
         user = self.request.user
         return FavoriteTrack.objects.filter(user=user).prefetch_related(
-            Prefetch('track', queryset=Track.objects.tracks_with_related())
+            Prefetch('track', queryset=Track.objects.select_related('album', 'musician'))
         )
 
 
@@ -89,35 +91,35 @@ class PlaylistViewSet(ModelViewSet):
         user = self.request.user
         return Playlist.objects.filter(user=user)
 
+    @action(methods=['get'], detail=False)
+    def tracks(self, request, pk=None):
+        playlist = self.get_object()
+        tracks = playlist.tracks.select_related('album', 'musician')
+
+        serializer = TrackSerializer(tracks, many=True)
+        return Response(serializer.data)
+
     @action(methods=['post'], detail=True)
-    def add_track(self, request, playlist_id=None, track_id=None):
+    def add_track(self, request, pk=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
-        _, is_created = TrackInPlaylist.objects.get_or_create(playlist=playlist, track=track)
+        _, is_created = playlist.tracks.through.objects.get_or_create(playlist=playlist, track=track)
         if is_created:
             playlist.update_track_count_and_duration_time(track.duration, increment=True)
         return Response(status=status.HTTP_200_OK)
 
     @action(methods=['delete'], detail=True)
-    def delete_track(self, request, playlist_id=None, track_id=None):
+    def delete_track(self, request, pk=None, track_id=None):
         playlist = self.get_object()
         track = get_object_or_404(Track, id=track_id)
-        existing_track = playlist.objects.filter(track=track).exists()
+        existing_track = playlist.tracks.through.objects.filter(playlist=playlist, track=track).exists()
 
         if not existing_track:
-            return Response({'detail': 'Track not exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Track not exists in playlist.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        playlist.objects.get(track=track).delete()
+        playlist.tracks.through.objects.get(playlist=playlist, track=track).delete()
         playlist.update_track_count_and_duration_time(track.duration, increment=False)
         return Response({'detail': 'Track deleted from playlist.'}, status=status.HTTP_200_OK)
-
-    @action(methods=['get'], detail=False)
-    def tracks(self, request, playlist_id=None):
-        playlist = self.get_object()
-        tracks = playlist.tracks.tracks_with_related()
-
-        serializer = TrackSerializer(tracks, many=True)
-        return Response(serializer.data)
 
 
 class LikeToAlbumViewSet(mixins.ListModelMixin,
@@ -142,6 +144,34 @@ class AlbumViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated(), IsMusician()]
-        elif self.action in ['update', 'partial_update', 'destroy']:
+        elif self.action in ['update', 'partial_update', 'destroy', 'add_track', 'delete_track']:
             return [IsAuthenticated(), IsMusicianCreator()]
         return super().get_permissions()
+
+    @action(methods=['get'], detail=False)
+    def tracks(self, request, pk=None):
+        album = self.get_object()
+        tracks = album.tracks.select_related('musician')
+        serializer = TrackSerializer(tracks, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['post'], detail=True)
+    def add_track(self, request, pk=None, track_id=None):
+        album = self.get_object()
+        track = get_object_or_404(Track, id=track_id)
+        if track.album:
+            return Response({'detail': 'Track has already been added to some album.'}, status=status.HTTP_400_BAD_REQUEST)
+        track.album = album
+        track.save(update_fields=['album'])
+        album.update_track_count_and_duration_time(track.duration, increment=True)
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['delete'], detail=True)
+    def delete_track(self, request, pk=None, track_id=None):
+        album = self.get_object()
+        track = get_object_or_404(Track, id=track_id)
+        if track.album:
+            track.album = None
+            track.save(update_fields=['album'])
+            album.update_track_count_and_duration_time(track.duration, increment=False)
+        return Response({'detail': 'Track deleted from album.'}, status=status.HTTP_200_OK)

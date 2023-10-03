@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Playlist, Track, Genre, Mood, FavoriteTrack, MusicianProfile, Album, LikeToAlbum
-from user.serializers import MusicianProfileSerializer
 from django.shortcuts import get_object_or_404
+from user.serializers import MusicianProfileSerializer
+from .models import Playlist, Track, Genre, Mood, FavoriteTrack, MusicianProfile, Album, LikeToAlbum
 
 
 class MoodSerializer(serializers.ModelSerializer):
@@ -66,15 +66,14 @@ class LikeToAlbumSerializer(serializers.ModelSerializer):
 
 class TrackSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
-    mood = serializers.CharField(required=False, allow_null=True, source='mood.name')
     album = serializers.CharField(required=False, allow_null=True, source='album.name')
-    genre = serializers.CharField(required=False, allow_null=True, source='genre.name')
+    is_favorite = serializers.BooleanField(required=False)
     musician = MusicianProfileSerializer()
 
     class Meta:
         model = Track
-        exclude = ('original_track',)
-        read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician')
+        exclude = ('original_track', 'mood', 'genre')
+        read_only_fields = ('track', 'duration', 'created_date', 'album', 'genre', 'mood', 'musician', 'is_favorite')
 
 
 class TrackCreateModifySerializer(serializers.ModelSerializer):

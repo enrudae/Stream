@@ -72,12 +72,6 @@ WSGI_APPLICATION = 'Stream.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
     "default": {
@@ -128,8 +122,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1',
     'http://0.0.0.0',
 ]
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0']
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0']
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = [
@@ -216,7 +208,7 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
 AWS_S3_REGION_NAME = 'storage'
 
-'''
+
 LOGGING = {
     'version': 1,
     'handlers': {
@@ -229,4 +221,3 @@ LOGGING = {
         }
     }
 }
-'''

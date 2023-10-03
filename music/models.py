@@ -1,16 +1,19 @@
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.files.storage import FileSystemStorage
 from user.models import MusicianProfile
 from Stream.yandex_s3_storage import ClientDocsStorage
-from django.core.files.storage import FileSystemStorage
 from music.tasks import process_and_upload_track
-from datetime import timedelta
 
 CustomUser = get_user_model()
 
 
 class Mood(models.Model):
     name = models.CharField(max_length=25)
+
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):
@@ -55,7 +58,7 @@ class LikeToAlbum(models.Model):
 
 
 class TrackManager(models.Manager):
-    def tracks_with_related(self):
+    def tracks_with_related_attributes(self):
         return self.get_queryset().select_related('musician', 'genre', 'album', 'mood')
 
 
@@ -68,7 +71,7 @@ class Track(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
 
     musician = models.ForeignKey(MusicianProfile, verbose_name='Создатель', on_delete=models.CASCADE, db_index=True)
-    album = models.ForeignKey(Album, verbose_name='Альбом', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
+    album = models.ForeignKey(Album, verbose_name='Альбом', related_name='tracks', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
     genre = models.ForeignKey(Genre, verbose_name='Жанр', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
     mood = models.ForeignKey(Mood, verbose_name='Настроение', on_delete=models.SET_NULL, blank=True, null=True, db_index=True)
 
@@ -97,7 +100,7 @@ class Playlist(TrackCountDurationMixin, models.Model):
 
 class FavoriteTrack(models.Model):
     like_date = models.DateTimeField(auto_now_add=True)
-    track = models.ForeignKey(Track, verbose_name='Трек', on_delete=models.CASCADE)
+    track = models.ForeignKey(Track, verbose_name='Трек', related_name='favorite_track', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, verbose_name='Пользователь', on_delete=models.CASCADE)
 
 
